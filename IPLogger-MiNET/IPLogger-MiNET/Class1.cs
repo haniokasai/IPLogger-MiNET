@@ -4,6 +4,7 @@ using MiNET;
 using MiNET.Plugins;
 using MiNET.Plugins.Attributes;
 using MiNET.Security;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,10 +18,15 @@ namespace IPLogger_MiNET
     {
         protected static ILog _log = LogManager.GetLogger("IPLogger_MiNET");
 
+
+        // 生徒名簿となる連想配列
+        Dictionary<string, Dictionary<string, string>> array;
+
         protected override void OnEnable()
         {
             Context.Server.PlayerFactory.PlayerCreated += PlayerFactory_PlayerCreated;
             _log.Warn("Loaded");
+
         }
 
         private void PlayerFactory_PlayerCreated(object sender, PlayerEventArgs e)
@@ -38,8 +44,24 @@ namespace IPLogger_MiNET
             _log.Warn(player.EndPoint.Port.ToString());
 
 
+            string json;
+            Dictionary<string, string> dic = new Dictionary<string, string>();
+            array = new Dictionary<string, Dictionary<string, string>>();
 
+            dic.Add("uuid", player.ClientUuid.ToString());
+            dic.Add("cid", player.ClientId.ToString());
+            dic.Add("ip", player.EndPoint.Address.MapToIPv4().ToString());
+            dic.Add("port", player.EndPoint.Port.ToString());
+            array.Add(player.Username, dic);
+            json = JsonConvert.SerializeObject(array);
+            Console.WriteLine(json);
         }
 
+        [Command(Name = "ipl", Description = "Iplogger ", Permission = "com.haniokasai.ipl")]
+        public void ipl(Player player)
+        {
+
+            player.SendMessage("Removed items from your Inventory!");
+        }
     }
 }
