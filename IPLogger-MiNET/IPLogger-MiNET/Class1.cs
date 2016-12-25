@@ -6,6 +6,7 @@ using MiNET.Plugins.Attributes;
 using MiNET.Security;
 using Newtonsoft.Json;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -17,10 +18,6 @@ namespace IPLogger_MiNET
     public class Class1 : Plugin
     {
         protected static ILog _log = LogManager.GetLogger("IPLogger_MiNET");
-
-
-        // 生徒名簿となる連想配列
-        Dictionary<string, Dictionary<string, string>> array;
 
         protected override void OnEnable()
         {
@@ -43,25 +40,52 @@ namespace IPLogger_MiNET
             _log.Warn(player.EndPoint.Address.MapToIPv4());
             _log.Warn(player.EndPoint.Port.ToString());
 
+            player.SetGameMode(MiNET.Worlds.GameMode.Creative);
 
-            string json;
-            Dictionary<string, string> dic = new Dictionary<string, string>();
-            array = new Dictionary<string, Dictionary<string, string>>();
+            Dictionary<string, Dictionary<string, ArrayList>> array;
+            Dictionary<string, ArrayList> dic = new Dictionary<string, ArrayList>();
+            array = new Dictionary<string, Dictionary<string, ArrayList>>();
 
-            dic.Add("uuid", player.ClientUuid.ToString());
-            dic.Add("cid", player.ClientId.ToString());
-            dic.Add("ip", player.EndPoint.Address.MapToIPv4().ToString());
-            dic.Add("port", player.EndPoint.Port.ToString());
+
+            _log.Warn(1);
+            ArrayList ip = new ArrayList();
+            ip.Add(player.EndPoint.Address.MapToIPv4().ToString());
+            _log.Warn(2);
+
+            //dic.Add("uuid", player.ClientUuid.ToString());
+            //dic.Add("cid", player.ClientId.ToString());
+            dic.Add("ip",ip);
+            //dic.Add("port", player.EndPoint.Port.ToString());
             array.Add(player.Username, dic);
+            _log.Warn(3);
+            string json;
             json = JsonConvert.SerializeObject(array);
             Console.WriteLine(json);
+            _log.Warn(4);
+            Dictionary<string, Dictionary<string, ArrayList>> jsoned;
+            jsoned = JsonConvert.DeserializeObject<Dictionary<string, Dictionary<string, ArrayList>>>(json);
+
+            _log.Warn(5);
+
+            string name = player.Username;
+
+            _log.Warn(6);
+
+            string[] iparray = (string[])jsoned[name]["ip"].ToArray(typeof(string));
+            string ips = string.Join(",", iparray);
+            _log.Warn(7);
+
+            _log.Warn("/*/*/*/*/IPLIST/*/*/*/*/");
+            _log.Warn("PlayerName: " +name);
+            _log.Warn(ips);
+
+            
         }
 
-        [Command(Name = "ipl", Description = "Iplogger ", Permission = "com.haniokasai.ipl")]
+        [Command(Name = "ipl", Description = "Iplogger for MiNET ", Permission = "com.haniokasai.ipl")]
         public void ipl(Player player)
         {
 
-            player.SendMessage("Removed items from your Inventory!");
         }
     }
 }
