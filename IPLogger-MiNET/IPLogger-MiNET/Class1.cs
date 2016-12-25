@@ -46,34 +46,26 @@ namespace IPLogger_MiNET
             Dictionary<string, ArrayList> dic = new Dictionary<string, ArrayList>();
             array = new Dictionary<string, Dictionary<string, ArrayList>>();
 
-
-            _log.Warn(1);
             ArrayList ip = new ArrayList();
             ip.Add(player.EndPoint.Address.MapToIPv4().ToString());
-            _log.Warn(2);
 
             //dic.Add("uuid", player.ClientUuid.ToString());
             //dic.Add("cid", player.ClientId.ToString());
             dic.Add("ip",ip);
             //dic.Add("port", player.EndPoint.Port.ToString());
             array.Add(player.Username, dic);
-            _log.Warn(3);
+
             string json;
             json = JsonConvert.SerializeObject(array);
             Console.WriteLine(json);
-            _log.Warn(4);
+
             Dictionary<string, Dictionary<string, ArrayList>> jsoned;
             jsoned = JsonConvert.DeserializeObject<Dictionary<string, Dictionary<string, ArrayList>>>(json);
 
-            _log.Warn(5);
-
             string name = player.Username;
-
-            _log.Warn(6);
 
             string[] iparray = (string[])jsoned[name]["ip"].ToArray(typeof(string));
             string ips = string.Join(",", iparray);
-            _log.Warn(7);
 
             _log.Warn("/*/*/*/*/IPLIST/*/*/*/*/");
             _log.Warn("PlayerName: " +name);
