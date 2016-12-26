@@ -132,28 +132,43 @@ namespace IPLogger_MiNET
                             command.CommandText = "SELECT * from players WHERE name='" + name.ToString().Trim() + "'";
                             using (SQLiteDataReader reader = command.ExecuteReader())
                             {
-                                string ip = null;
-                                 while (reader.Read())
-                                  {
-                                   ip += reader["ip"] + ",";
-                                   try
-                                  {
-                                      var a = reader["ip"];
-                                   }
-                                  catch (NullReferenceException e)
-                                   {
+                                 string ip = null;
+                                 string cid = null;
+                                 string uuid = null;
+                                while (reader.Read())
+                                 {
+                                try
+                                {
+                                    if (ip.Contains(reader["ip"].ToString())) {
+                                        ip += reader["ip"] + ",";
+                                    }
+                                    if (cid.Contains(reader["cid"].ToString()))
+                                    {
+                                        cid += reader["cid"] + ",";
+                                    }
+                                    if (uuid.Contains(reader["uuid"].ToString()))
+                                    {
+                                        uuid += reader["uuid"] + ",";
+                                    }
+
+                                }
+                                catch (NotFiniteNumberException e) { }
 
                                   }
 
-                                  player.SendMessage(ip);
-                                  if (ip ==null)
+                                 
+                            if (ip ==null)
                                   {
                                       player.SendMessage("NO DATA");
-                                  }
-                                 player.SendMessage("/////////////////");
-                                }
-                            }  
-                    }
+                            }else
+                            {
+                                player.SendMessage("IP: "+ip);
+                                player.SendMessage("CID: "+cid);
+                                player.SendMessage("UUID: "+uuid);
+                            }
+                            player.SendMessage("/////////////////");
+                        }  
+                       }
                     conn.Close();
                 }
 
