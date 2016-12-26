@@ -79,12 +79,12 @@ namespace IPLogger_MiNET
 
                     using (SQLiteCommand command = conn.CreateCommand())
                     {
-                        command.CommandText = "SELECT * from players WHERE 'name'='" + name + "'";
+                        command.CommandText = "SELECT * from players WHERE name='" + name + "'";
                         using (SQLiteDataReader reader = command.ExecuteReader())
                         {
                             while (reader.Read())
                             {
-                                _log.Warn(reader["ip"]);
+                                _log.Warn(reader["ip"].ToString());
                                 if(reader["ip"].ToString() == ip)
                                 {
                                     if (reader["cid"].ToString() == cid)
@@ -114,7 +114,7 @@ namespace IPLogger_MiNET
                 conn.Open();
                 using (SQLiteCommand command = conn.CreateCommand())
                 {
-                    command.CommandText = "SELECT * from players WHERE 'name'='" + name + "'";
+                    command.CommandText = "SELECT * from players WHERE name='" + name + "'";
                     using (SQLiteDataReader reader = command.ExecuteReader())
                     {
                         while (reader.Read())
