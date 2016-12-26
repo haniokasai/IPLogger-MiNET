@@ -14,6 +14,7 @@ using System.Threading.Tasks;
 using System.Data.SQLite;
 using System.IO;
 using System.Reflection;
+using System.Text.RegularExpressions;
 
 namespace IPLogger_MiNET
 {
@@ -109,7 +110,27 @@ namespace IPLogger_MiNET
                 conn.Close();
             }
 
-            using (var conn = new SQLiteConnection("Data Source=" + db_file))
+            
+
+        }
+
+        [Command(Name = "ipl", Description = "Iplogger for MiNET ", Permission = "com.haniokasai.ipl")]
+        public bool ipl(Player player, string[] args)
+        {
+            if (args.Count() == 0)
+            {
+                player.SendMessage("/ipl <username>");
+                return false;
+            }
+            Match mc = Regex.Match(@"/^[a-zA-Z0-9_]+$/u", args[0]);
+            // 引っかかったか？
+            if (!mc.Success)
+            {
+                player.SendMessage("invaild <username>");
+                return false;
+            }
+
+                using (var conn = new SQLiteConnection("Data Source=" + db_file))
             {
                 conn.Open();
                 using (SQLiteCommand command = conn.CreateCommand())
@@ -128,13 +149,7 @@ namespace IPLogger_MiNET
                 }
                 conn.Close();
             }
-
-        }
-
-        [Command(Name = "ipl", Description = "Iplogger for MiNET ", Permission = "com.haniokasai.ipl")]
-        public void ipl(Player player)
-        {
-
+            return true;
         }
     }
 }
