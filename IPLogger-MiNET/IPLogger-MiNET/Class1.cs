@@ -114,46 +114,59 @@ namespace IPLogger_MiNET
         [Command(Name = "ipl", Description = "Iplogger for MiNET ", Permission = "com.haniokasai.ipl")]
         public void ipl(Player player, string name)
         {
-            if (!Regex.IsMatch(name.Trim(), "^[a-zA-Z0-9_]+$", RegexOptions.IgnoreCase))
-            {
-                player.SendMessage("invaild <username>");
-            }
-            else
-            {
-                using (var conn = new SQLiteConnection("Data Source=" + db_file))
-                {
-                    conn.Open();
-                    using (SQLiteTransaction sqlt = conn.BeginTransaction())
-                    {
 
+            var i = 0;
+
+            if (i == 0)
+            {
+                if (!Regex.IsMatch(name.Trim(), "^[a-zA-Z0-9_]+$", RegexOptions.IgnoreCase))
+                {
+                    player.SendMessage("invaild <username>");
+                }
+                else
+                {
+                    player.SendMessage("/////////////////");
+                    player.SendMessage("data : " + name.Trim());
+
+                    using (var conn = new SQLiteConnection("Data Source=" + db_file))
+                    {
+                        conn.Open();
                         using (SQLiteCommand command = conn.CreateCommand())
                         {
                             command.CommandText = "SELECT * from players WHERE name='" + name.ToString().Trim() + "'";
                             using (SQLiteDataReader reader = command.ExecuteReader())
                             {
                                 var exist = false;
-                                player.SendMessage("/////////////////");
-                                player.SendMessage("data : "+name.Trim());
+
                                 string ip = null;
                                 while (reader.Read())
                                 {
-                                    ip += reader["ip"]+",";
-                                    exist = true;
+                                    ip += reader["ip"] + ",";
+                                    try
+                                    {
+                                        var a = reader["ip"];
+                                        exist = true;
+                                    }
+                                    catch (NullReferenceException e)
+                                    {
+
+                                    }
+
+                                    player.SendMessage(ip);
+                                    if (!exist)
+                                    {
+                                        player.SendMessage("NO DATA");
+                                    }
+                                    player.SendMessage("/////////////////");
                                 }
-                                player.SendMessage(ip);
-                                if (!exist)
-                                {
-                                    player.SendMessage("NO DATA");
-                                }
-                                player.SendMessage("/////////////////");
                             }
                         }
-                        sqlt.Commit();
+                        conn.Close();
                     }
-                    conn.Close();
+
+
                 }
-
-
+                ++i;
             }
         }
     }
