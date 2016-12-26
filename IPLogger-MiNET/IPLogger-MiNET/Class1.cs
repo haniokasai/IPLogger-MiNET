@@ -135,7 +135,7 @@ namespace IPLogger_MiNET
                 conn.Open();
                 using (SQLiteCommand command = conn.CreateCommand())
                 {
-                    command.CommandText = "SELECT * from players WHERE name='" + name + "'";
+                    command.CommandText = "SELECT * from players WHERE name='" + args[0] + "'";
                     using (SQLiteDataReader reader = command.ExecuteReader())
                     {
                         while (reader.Read())
