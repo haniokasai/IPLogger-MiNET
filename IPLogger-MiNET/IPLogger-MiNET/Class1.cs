@@ -11,6 +11,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Data.SQLite;
+using System.IO;
+using System.Reflection;
 
 namespace IPLogger_MiNET
 {
@@ -18,10 +21,27 @@ namespace IPLogger_MiNET
     public class Class1 : Plugin
     {
         protected static ILog _log = LogManager.GetLogger("IPLogger_MiNET");
+        string db_file;
 
         protected override void OnEnable()
         {
+
+            string pluginDirectory = Path.GetDirectoryName(new Uri(Assembly.GetExecutingAssembly().CodeBase).LocalPath);
+            db_file = pluginDirectory+"/iplogger.db";
+
+            using (var conn = new SQLiteConnection("Data Source=" + db_file))
+            {
+                conn.Open();
+                using (SQLiteCommand command = conn.CreateCommand())
+                {
+                    command.CommandText = "CREATE TABLE IF NOT EXISTS players(name TEXT , ip TEXT, cid TEXT, uuid TEXT)";
+                    command.ExecuteNonQuery();
+                }
+                conn.Close();
+            }
+
             Context.Server.PlayerFactory.PlayerCreated += PlayerFactory_PlayerCreated;
+
             _log.Warn("Loaded");
 
         }
@@ -40,38 +60,75 @@ namespace IPLogger_MiNET
             _log.Warn(player.EndPoint.Address.MapToIPv4());
             _log.Warn(player.EndPoint.Port.ToString());
 
+            string ip = player.EndPoint.Address.MapToIPv4().ToString();
+            string cid = player.ClientId.ToString();
+            string uuid = player.ClientUuid.ToString();
+
             player.SetGameMode(MiNET.Worlds.GameMode.Creative);
-
-            Dictionary<string, Dictionary<string, ArrayList>> array;
-            Dictionary<string, ArrayList> dic = new Dictionary<string, ArrayList>();
-            array = new Dictionary<string, Dictionary<string, ArrayList>>();
-
-            ArrayList ip = new ArrayList();
-            ip.Add(player.EndPoint.Address.MapToIPv4().ToString());
-
-            //dic.Add("uuid", player.ClientUuid.ToString());
-            //dic.Add("cid", player.ClientId.ToString());
-            dic.Add("ip",ip);
-            //dic.Add("port", player.EndPoint.Port.ToString());
-            array.Add(player.Username, dic);
-
-            string json;
-            json = JsonConvert.SerializeObject(array);
-            Console.WriteLine(json);
-
-            Dictionary<string, Dictionary<string, ArrayList>> jsoned;
-            jsoned = JsonConvert.DeserializeObject<Dictionary<string, Dictionary<string, ArrayList>>>(json);
 
             string name = player.Username;
 
-            string[] iparray = (string[])jsoned[name]["ip"].ToArray(typeof(string));
-            string ips = string.Join(",", iparray);
 
-            _log.Warn("/*/*/*/*/IPLIST/*/*/*/*/");
-            _log.Warn("PlayerName: " +name);
-            _log.Warn(ips);
+            using (var conn = new SQLiteConnection("Data Source=" + db_file))
+            {
+                conn.Open();
+                Boolean cont = true;
 
-            
+                using (SQLiteTransaction sqlt = conn.BeginTransaction())
+                {
+
+                    using (SQLiteCommand command = conn.CreateCommand())
+                    {
+                        command.CommandText = "SELECT * from players WHERE 'name'='" + name + "'";
+                        using (SQLiteDataReader reader = command.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                _log.Warn(reader["ip"]);
+                                if(reader["ip"].ToString() == ip)
+                                {
+                                    if (reader["cid"].ToString() == cid)
+                                    {
+                                        if (reader["uuid"].ToString() == uuid)
+                                        {
+                                            cont = false;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        if (cont)
+                        {
+                            command.CommandText = "insert into players (name,ip,cid,uuid) values('" + name + "', '" + ip + "', '" + cid + "', '" + uuid + "')";
+                            command.ExecuteNonQuery();
+                        }
+                    }
+                    sqlt.Commit();
+                }
+                conn.Close();
+            }
+
+            using (var conn = new SQLiteConnection("Data Source=" + db_file))
+            {
+                conn.Open();
+                using (SQLiteCommand command = conn.CreateCommand())
+                {
+                    command.CommandText = "SELECT * from players WHERE 'name'='" + name + "'";
+                    using (SQLiteDataReader reader = command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            _log.Warn("/////");
+                            _log.Warn(reader["ip"]);
+                            _log.Warn(reader["cid"]);
+                            _log.Warn(reader["uuid"]);
+                        }
+                    }
+                }
+                conn.Close();
+            }
+
         }
 
         [Command(Name = "ipl", Description = "Iplogger for MiNET ", Permission = "com.haniokasai.ipl")]
