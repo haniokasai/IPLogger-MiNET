@@ -34,7 +34,7 @@ namespace IPLogger_MiNET
                 conn.Open();
                 using (SQLiteCommand command = conn.CreateCommand())
                 {
-                    command.CommandText = "CREATE TABLE IF NOT EXISTS players(name TEXT  , ip TEXT, cid TEXT, uuid TEXT)";
+                    command.CommandText = "CREATE TABLE IF NOT EXISTS players(name TEXT , ip TEXT, cid TEXT, uuid TEXT)";
                     command.ExecuteNonQuery();
                 }
                 conn.Close();
@@ -79,28 +79,23 @@ namespace IPLogger_MiNET
 
                     using (SQLiteCommand command = conn.CreateCommand())
                     {
-                        try
+                        command.CommandText = "SELECT * from players WHERE 'name'='" + name + "'";
+                        using (SQLiteDataReader reader = command.ExecuteReader())
                         {
-                            SQLiteCommand commanda;
-                            // DBからデータを取得する
-                            var sql = "SELECT * from players WHERE name='" + name + "'";
-                            commanda = new SQLiteCommand(sql, conn);
-                            SQLiteDataReader reader = commanda.ExecuteReader();
-
-                            // 取得したデータをデータグリッドビュー（表）に表示する。
-                            while (reader.Read())   // データがあるだけ繰り返す
+                            while (reader.Read())
                             {
-                                _log.Warn(reader.GetString(0));
-                                if (reader.GetString(0) == ip)
+                                _log.Warn(reader["ip"]);
+                                if(reader["ip"].ToString() == ip)
                                 {
-
+                                    if (reader["cid"].ToString() == cid)
+                                    {
+                                        if (reader["uuid"].ToString() == uuid)
+                                        {
+                                            cont = false;
+                                        }
+                                    }
                                 }
-                                    
                             }
-                        }
-                        catch (Exception ex)
-                        {
-                           
                         }
 
                         if (cont)
