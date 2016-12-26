@@ -42,11 +42,11 @@ namespace IPLogger_MiNET
 
             player.SetGameMode(MiNET.Worlds.GameMode.Creative);
 
-            Dictionary<string, Dictionary<string, string[]>> array;
-            Dictionary<string, string[]> dic = new Dictionary<string, string[]>();
-            array = new Dictionary<string, Dictionary<string, string[]>>();
+            Dictionary<string, Dictionary<string, ArrayList>> array;
+            Dictionary<string, ArrayList> dic = new Dictionary<string, ArrayList>();
+            array = new Dictionary<string, Dictionary<string, ArrayList>>();
 
-            string[] ip = { };
+            ArrayList ip = new ArrayList();
             ip.Add(player.EndPoint.Address.MapToIPv4().ToString());
 
             //dic.Add("uuid", player.ClientUuid.ToString());
@@ -70,8 +70,6 @@ namespace IPLogger_MiNET
             _log.Warn("/*/*/*/*/IPLIST/*/*/*/*/");
             _log.Warn("PlayerName: " +name);
             _log.Warn(ips);
-
-
 
             
         }
