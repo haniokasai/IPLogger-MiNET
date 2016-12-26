@@ -42,7 +42,7 @@ namespace IPLogger_MiNET
             }
 
             Context.Server.PlayerFactory.PlayerCreated += PlayerFactory_PlayerCreated;
-
+     
             _log.Warn("Loaded");
 
         }
@@ -85,7 +85,6 @@ namespace IPLogger_MiNET
                         {
                             while (reader.Read())
                             {
-                                _log.Warn(reader["ip"].ToString());
                                 if(reader["ip"].ToString() == ip)
                                 {
                                     if (reader["cid"].ToString() == cid)
@@ -110,46 +109,52 @@ namespace IPLogger_MiNET
                 conn.Close();
             }
 
-            
-
         }
 
         [Command(Name = "ipl", Description = "Iplogger for MiNET ", Permission = "com.haniokasai.ipl")]
-        public bool ipl(Player player, string[] args)
+        public void ipl(Player player, string name)
         {
-            if (args.Count() == 0)
-            {
-                player.SendMessage("/ipl <username>");
-                return false;
-            }
-            Match mc = Regex.Match(@"/^[a-zA-Z0-9_]+$/u", args[0]);
-            // 引っかかったか？
-            if (!mc.Success)
+            if (!Regex.IsMatch(name.Trim(), "^[a-zA-Z0-9_]+$", RegexOptions.IgnoreCase))
             {
                 player.SendMessage("invaild <username>");
-                return false;
             }
-
-                using (var conn = new SQLiteConnection("Data Source=" + db_file))
+            else
             {
-                conn.Open();
-                using (SQLiteCommand command = conn.CreateCommand())
+                using (var conn = new SQLiteConnection("Data Source=" + db_file))
                 {
-                    command.CommandText = "SELECT * from players WHERE name='" + args[0] + "'";
-                    using (SQLiteDataReader reader = command.ExecuteReader())
+                    conn.Open();
+                    using (SQLiteTransaction sqlt = conn.BeginTransaction())
                     {
-                        while (reader.Read())
+
+                        using (SQLiteCommand command = conn.CreateCommand())
                         {
-                            _log.Warn("/////");
-                            _log.Warn(reader["ip"]);
-                            _log.Warn(reader["cid"]);
-                            _log.Warn(reader["uuid"]);
+                            command.CommandText = "SELECT * from players WHERE name='" + name.ToString().Trim() + "'";
+                            using (SQLiteDataReader reader = command.ExecuteReader())
+                            {
+                                var exist = false;
+                                player.SendMessage("/////////////////");
+                                player.SendMessage("data : "+name.Trim());
+                                string ip = null;
+                                while (reader.Read())
+                                {
+                                    ip += reader["ip"]+",";
+                                    exist = true;
+                                }
+                                player.SendMessage(ip);
+                                if (!exist)
+                                {
+                                    player.SendMessage("NO DATA");
+                                }
+                                player.SendMessage("/////////////////");
+                            }
                         }
+                        sqlt.Commit();
                     }
+                    conn.Close();
                 }
-                conn.Close();
+
+
             }
-            return true;
         }
     }
 }
