@@ -65,7 +65,7 @@ namespace IPLogger_MiNET
             string cid = player.ClientId.ToString();
             string uuid = player.ClientUuid.ToString();
 
-            player.SetGameMode(MiNET.Worlds.GameMode.Creative);
+            //player.SetGameMode(MiNET.Worlds.GameMode.Creative);
 
             string name = player.Username;
 
